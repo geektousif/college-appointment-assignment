@@ -7,11 +7,13 @@ export const roleEnum = pgEnum('role', [USER_ROLE.STUDENT, USER_ROLE.PROFESSOR])
 export const user = pgTable(
     'user',
     {
-        id: integer().primaryKey().generatedAlwaysAsIdentity({ increment: 1, startWith: 1000 }),
-        name: text().notNull(),
-        email: text().notNull().unique(),
-        password: text().notNull(),
+        id: integer('id').primaryKey().generatedAlwaysAsIdentity({ increment: 1, startWith: 1000 }),
+        name: text('name').notNull(),
+        email: text('email').notNull().unique(),
+        password: text('password').notNull(),
         role: roleEnum().notNull().default(USER_ROLE.STUDENT),
+
+        refreshToken: text('refresh_token'),
         ...timestamps,
     },
     (table) => {

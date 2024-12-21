@@ -1,8 +1,9 @@
 import jwt from 'jsonwebtoken';
 import env from '../config';
 import { cookieOptions } from './miscHelpers';
+import { JWTRefreshTokenPayload, JWTTokenPayload } from '../types';
 
-export const generateAccessToken = (payload: object) => {
+export const generateAccessToken = (payload: JWTTokenPayload) => {
     return jwt.sign(payload, env.JWT_ACCESS_SECRET, {
         expiresIn: '3h',
     });
@@ -12,7 +13,7 @@ export const verifyAccessToken = (token: string) => {
     return jwt.verify(token, env.JWT_ACCESS_SECRET);
 };
 
-export const generateRefreshToken = (payload: object) => {
+export const generateRefreshToken = (payload: JWTRefreshTokenPayload) => {
     return jwt.sign(payload, env.JWT_REFRESH_SECRET, {
         expiresIn: '7d',
     });

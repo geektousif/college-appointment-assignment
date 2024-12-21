@@ -11,7 +11,7 @@ app.use(morgan('dev'));
 
 // app.use(
 //     cors({
-//         origin: config.frontendOriginUrl,
+//         origin: env.FRONTEND_URL,
 //     }),
 // );
 
