@@ -9,6 +9,9 @@ const app = express();
 
 app.use(morgan('dev'));
 
+// BUG Fix: Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client
+
+// TODO: Add CORS & helmet
 // app.use(
 //     cors({
 //         origin: env.FRONTEND_URL,

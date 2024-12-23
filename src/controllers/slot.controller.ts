@@ -25,7 +25,7 @@ const getMySlots = asyncHandler(async (req, res) => {
 const getSlotsByProfessor = asyncHandler(async (req, res) => {
     const professorId = Number(req.params.professorId);
 
-    const slots = await slotService.getSlotsByProfessor(professorId);
+    const slots = await slotService.getAvailableSlots(professorId);
 
     return res.status(200).json(ApiResponse(200, 'Slots fetched successfully', slots));
 });

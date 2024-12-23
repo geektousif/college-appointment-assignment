@@ -10,7 +10,9 @@ export const createSlotSchema = createInsertSchema(slot, {
     startTime: z.coerce
         .date()
         .refine((value) => new Date(value) > new Date(), { message: "Start time can't be in the past" }),
-    endTime: z.coerce.date().refine((value) => new Date(value) > new Date(), { message: "End time can't be in the past" }),
+    endTime: z.coerce
+        .date()
+        .refine((value) => new Date(value) > new Date(), { message: "End time can't be in the past" }),
 }).refine((data) => data.startTime < data.endTime, { message: 'End time should be greater than start time' });
 
 export const selectSlotSchema = createSelectSchema(slot);

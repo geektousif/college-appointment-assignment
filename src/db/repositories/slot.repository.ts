@@ -21,6 +21,13 @@ const getSlots = async (professorId: number) => {
     return await db.select().from(slot).where(eq(slot.professorId, professorId));
 };
 
+const getAvailableSlots = async (professorId: number) => {
+    return await db
+        .select()
+        .from(slot)
+        .where(and(eq(slot.professorId, professorId), eq(slot.isBooked, false)));
+};
+
 const getSlotDetailsById = async (id: number) => {
     const [result] = await db.select().from(slot).where(eq(slot.id, id));
     return result;
@@ -47,4 +54,5 @@ export const slotRepository = {
     getSlotDetailsById,
     createSlot,
     deleteSlot,
+    getAvailableSlots,
 };

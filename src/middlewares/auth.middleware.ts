@@ -1,10 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
-
 import { verifyAccessToken } from '../utils/jwtHelpers';
 import { UnauthorizedError } from '../utils/AppError';
 import asyncHandler from '../utils/asyncHandler';
+import { JWTTokenPayload } from '../types';
 
-const authMiddleware = asyncHandler(async (req: Request, _res: Response, next: NextFunction) => {
+const authMiddleware = asyncHandler(async (req, _res, next) => {
     const token =
         req.cookies?.accessToken ||
         (req.headers.authorization?.startsWith('Bearer ') && req.headers.authorization.split(' ')[1]);
@@ -16,10 +15,10 @@ const authMiddleware = asyncHandler(async (req: Request, _res: Response, next: N
     try {
         const decoded = verifyAccessToken(token);
         // TODO add user to req object
-        // @ts-ignore
-        req.user = decoded;
+        req.user = decoded as JWTTokenPayload;
         next();
     } catch (error) {
+        console.log(error);
         throw new UnauthorizedError('Invalid Access Token');
     }
 });

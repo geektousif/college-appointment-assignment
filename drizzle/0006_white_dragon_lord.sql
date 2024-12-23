@@ -1,0 +1,1 @@
+ALTER TABLE "user" RENAME COLUMN "refreshToken" TO "refresh_token";

@@ -8,7 +8,13 @@ const myFormat = printf(({ level, message, timestamp }) => {
 
 const logger = createLogger({
     level: 'debug',
-    format: combine(format.colorize({ all: true }), timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), align(), cli(), myFormat),
+    format: combine(
+        format.colorize({ all: true }),
+        timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+        align(),
+        cli(),
+        myFormat,
+    ),
     transports: [
         new transports.Console(),
         new transports.File({ filename: 'logs/error.log', level: 'error' }),

@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { eq, or, and } from 'drizzle-orm';
 import db from '..';
 import { slot } from '../schemas/slot.schema';
 import { appointment } from '../schemas/appointment.schema';
@@ -6,7 +6,7 @@ import { APPOINTMENT_STATUS } from '../../constants/enums';
 import { user } from '../schemas/user.schema';
 
 const createAppointment = async (studentId: number, slotId: number) => {
-    const result = await db.transaction(async (tx) => {
+    const [result] = await db.transaction(async (tx) => {
         const [res] = await tx
             .update(slot)
             .set({ isBooked: true })
@@ -43,7 +43,7 @@ const deleteAppointment = async (appointmentId: number) => {
     });
 };
 
-const getStudentAppointments = async (studentId: number) => {
+const getMyAppointments = async (userId: number) => {
     return await db
         .select({
             id: appointment.id,
@@ -54,35 +54,23 @@ const getStudentAppointments = async (studentId: number) => {
             professorName: user.name,
             professorEmail: user.email,
             studentId: appointment.studentId,
-        })
-        .from(appointment)
-        .where(and(eq(appointment.studentId, studentId), eq(appointment.status, APPOINTMENT_STATUS.SCHEUDLED)))
-        .innerJoin(slot, eq(appointment.slotId, slot.id))
-        .innerJoin(user, eq(appointment.professorId, user.id));
-};
-
-const getProfessorAppointments = async (professorId: number) => {
-    return await db
-        .select({
-            id: appointment.id,
-            slotId: appointment.slotId,
-            startTime: slot.startTime,
-            endTime: slot.endTime,
-            studentId: appointment.studentId,
             studentName: user.name,
             studentEmail: user.email,
-            professorId: appointment.professorId,
         })
         .from(appointment)
-        .where(and(eq(appointment.professorId, professorId), eq(appointment.status, APPOINTMENT_STATUS.SCHEUDLED)))
+        .where(
+            and(
+                or(eq(appointment.studentId, userId), eq(appointment.professorId, userId)),
+                eq(appointment.status, APPOINTMENT_STATUS.SCHEUDLED),
+            ),
+        )
         .innerJoin(slot, eq(appointment.slotId, slot.id))
-        .innerJoin(user, eq(appointment.studentId, user.id));
+        .innerJoin(user, eq(appointment.professorId, user.id));
 };
 
 export const appointmentRepository = {
     createAppointment,
     deleteAppointment,
     getAppointmentById,
-    getStudentAppointments,
-    getProfessorAppointments,
+    getMyAppointments,
 };

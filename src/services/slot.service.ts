@@ -39,6 +39,23 @@ const getSlotsByProfessor = async (professorId: number) => {
     return slots;
 };
 
+const getAvailableSlots = async (professorId: number) => {
+    const user = await userRepository.getUserById(professorId);
+
+    if (!user || user.role !== 'professor') {
+        throw new NotFoundError('Invalid Professor Id');
+    }
+
+    // TODO check if professor has slots , if not return empty array
+    const slots = await slotRepository.getAvailableSlots(professorId);
+
+    if (!slots.length) {
+        return [];
+    }
+
+    return slots;
+};
+
 const deleteSlot = async (slotId: number, professorId: number) => {
     const slot = await slotRepository.getSlotDetailsById(slotId);
 
@@ -57,6 +74,6 @@ const deleteSlot = async (slotId: number, professorId: number) => {
 
 // TODO : Update Slot
 
-export const slotService = { createSlot, getSlotsByProfessor, deleteSlot };
+export const slotService = { createSlot, getAvailableSlots, getSlotsByProfessor, deleteSlot };
 
 // TODO disalocate slot after time is passed (cron job)

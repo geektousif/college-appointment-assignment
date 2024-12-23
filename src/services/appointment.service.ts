@@ -36,12 +36,20 @@ const cancelAppointment = async (appointmentId: number, userId: number) => {
     return logger.info(`Appointment cancelled for appointmentId: ${appointmentId}`);
 };
 
-const getStudentAppointments = async (studentId: number) => {
-    return await appointmentRepository.getStudentAppointments(studentId);
+const getMyAppointments = async (userId: number) => {
+    return await appointmentRepository.getMyAppointments(userId);
 };
 
-const getProfessorAppointments = async (professorId: number) => {
-    return await appointmentRepository.getProfessorAppointments(professorId);
-};
+// const getStudentAppointments = async (studentId: number) => {
+//     return await appointmentRepository.getStudentAppointments(studentId);
+// };
 
-export const appointmentService = { createAppointment, cancelAppointment, getStudentAppointments, getProfessorAppointments };
+// const getProfessorAppointments = async (professorId: number) => {
+//     return await appointmentRepository.getProfessorAppointments(professorId);
+// };
+
+export const appointmentService = {
+    createAppointment,
+    cancelAppointment,
+    getMyAppointments,
+};

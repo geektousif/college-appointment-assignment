@@ -16,11 +16,10 @@ router.delete(
     appointmentController.cancelAppointment,
 );
 
-router.get('/student', roleMiddleware([USER_ROLE.STUDENT] as UserRole[]), appointmentController.getStudentAppointments);
 router.get(
-    '/professor',
-    roleMiddleware([USER_ROLE.PROFESSOR] as UserRole[]),
-    appointmentController.getProfessorAppointments,
+    '/',
+    roleMiddleware([USER_ROLE.STUDENT, USER_ROLE.PROFESSOR] as UserRole[]),
+    appointmentController.getMyAppointments,
 );
 
 export default router;

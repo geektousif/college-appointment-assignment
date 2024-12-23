@@ -2,13 +2,28 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import env from '../config';
 import { Pool } from 'pg';
 
-const pool = new Pool({
-    host: env.POSTGRES_HOST,
-    port: env.POSTGRES_PORT,
-    user: env.POSTGRES_USER,
-    password: env.POSTGRES_PASSWORD,
-    database: env.POSTGRES_DB,
-});
+const isTestEnv = env.NODE_ENV === 'test';
+
+let dbConfig;
+if (isTestEnv) {
+    dbConfig = {
+        host: 'localhost',
+        port: 5433,
+        user: 'postgres',
+        password: 'postgres',
+        database: 'test_db',
+    };
+} else {
+    dbConfig = {
+        host: env.POSTGRES_HOST,
+        port: env.POSTGRES_PORT,
+        user: env.POSTGRES_USER,
+        password: env.POSTGRES_PASSWORD,
+        database: env.POSTGRES_DB,
+    };
+}
+
+const pool = new Pool(dbConfig);
 
 const db = drizzle({
     client: pool,
