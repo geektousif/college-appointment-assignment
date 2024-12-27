@@ -14,7 +14,6 @@ const authMiddleware = asyncHandler(async (req, _res, next) => {
 
     try {
         const decoded = verifyAccessToken(token);
-        // TODO add user to req object
         req.user = decoded as JWTTokenPayload;
         next();
     } catch (error) {

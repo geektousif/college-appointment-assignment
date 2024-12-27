@@ -16,10 +16,6 @@ function errorHandler(err: any, req: Request, res: Response, _next: NextFunction
 
     const isDev = env.NODE_ENV === 'development';
 
-    // if (isDev) {
-    //     console.log(err);
-    // }
-
     if (err instanceof AppError) {
         res.status(err.statusCode).json(ApiResponse(err.statusCode, err.message, isDev ? err.errors : null));
     }

@@ -36,7 +36,7 @@ const logout = asyncHandler(async (req, res) => {
         .json(ApiResponse(200, 'Logout successful', null));
 });
 
-const me = asyncHandler(async (req, res) => {
+const getMe = asyncHandler(async (req, res) => {
     const user = await selectUserSchema.partial().parseAsync(req.user);
 
     return res.status(200).json(ApiResponse(200, 'Success', user));
@@ -62,6 +62,6 @@ export const authController = {
     register,
     login,
     logout,
-    me,
+    getMe,
     refreshToken,
 };
