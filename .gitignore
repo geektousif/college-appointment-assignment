@@ -6,3 +6,6 @@ logs
 College-Appointment.postman_collection.json
 todos.txt
 docker-compose.test.yml
+
+tests/testdb.config.ts
+tests/testUsersData.ts 
