@@ -1,79 +1,121 @@
-import logger from '../config/logger.config';
-import { slotRepository } from '../db/repositories/slot.repository';
-import { userRepository } from '../db/repositories/user.repository';
-import { CreateSlotSchema } from '../dto/slot.dto';
-import { BadRequestError, NotFoundError, UnauthorizedError } from '../utils/AppError';
+import { SlotRepository } from '../repositories/slot.repository';
 
-const createSlot = async (availabilityData: CreateSlotSchema) => {
-    const { endTime, professorId, startTime } = availabilityData;
+import { checkSlotAvailabilityDto, CreateSlotDto, SlotResponseDto, UpdateSlotDto } from '../dto/slot.dto';
+import { BadRequestError, ForbiddenError, NotFoundError } from '../utils/AppError';
+import { inject, injectable } from 'tsyringe';
+import { DI_TOKEN_NAMES } from '../constants/container';
 
-    // FIX mess around professorId from DTO schema
-    const isSlotAvailable = await slotRepository.checkSlotAvailability(professorId!, startTime, endTime);
+@injectable()
+export class SlotService {
+    constructor(@inject(DI_TOKEN_NAMES.SLOT_REPOSITORY) private slotRepository: SlotRepository) {}
 
-    if (!isSlotAvailable) {
-        throw new BadRequestError('Time Slot is already allocated');
+    async createSlot(slotData: CreateSlotDto): Promise<SlotResponseDto> {
+        const { endTime, professor, startTime } = slotData;
+
+        const existingSlots = await this.slotRepository.findAvailableSlots({
+            endTime,
+            startTime,
+            professor,
+        });
+
+        if (existingSlots && existingSlots.length) {
+            throw new BadRequestError('Time Slot is already allocated');
+        }
+
+        const newSlot = await this.slotRepository.createSlot({
+            endTime,
+            professor,
+            startTime,
+        });
+
+        return {
+            id: newSlot._id.toString(),
+            professor: newSlot.professor.toString(),
+            startTime: newSlot.startTime,
+            endTime: newSlot.endTime,
+            isBooked: newSlot.isBooked,
+            createdAt: newSlot.createdAt,
+            updatedAt: newSlot.updatedAt,
+        };
     }
 
-    const newSlot = await slotRepository.createSlot({ professorId, startTime, endTime });
+    async searchSlots(data: checkSlotAvailabilityDto): Promise<SlotResponseDto[]> {
+        const slots = await this.slotRepository.findAvailableSlots({
+            professor: data.professor,
+            startTime: data.startTime,
+            endTime: data.endTime,
+        });
 
-    logger.info(`Slot created successfully with id: ${newSlot.id} for professorId: ${professorId}`);
-    return newSlot;
-};
+        if (!slots.length) {
+            return [];
+        }
 
-// TODO : Search Slots based on Date
-const getSlotsByProfessor = async (professorId: number) => {
-    // TODO check if professor exists
-    const user = await userRepository.getUserById(professorId);
-
-    if (!user || user.role !== 'professor') {
-        throw new NotFoundError('Invalid Professor Id');
+        return slots.map((slot) => ({
+            id: slot._id.toString(),
+            professor: slot.professor.toString(),
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+            isBooked: slot.isBooked,
+            createdAt: slot.createdAt,
+            updatedAt: slot.updatedAt,
+        }));
     }
 
-    // TODO check if professor has slots , if not return empty array
-    const slots = await slotRepository.getSlots(professorId);
+    async getAllSlots(professorId: string): Promise<SlotResponseDto[]> {
+        const slots = await this.slotRepository.findAllSlots(professorId);
 
-    if (!slots.length) {
-        return [];
+        return slots.map((slot) => ({
+            id: slot._id.toString(),
+            professor: slot.professor.toString(),
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+            isBooked: slot.isBooked,
+            createdAt: slot.createdAt,
+            updatedAt: slot.updatedAt,
+        }));
     }
 
-    return slots;
-};
+    async deleteSlot(slotId: string, userId: string) {
+        const slot = await this.slotRepository.findSlotById(slotId);
 
-const getAvailableSlots = async (professorId: number) => {
-    const user = await userRepository.getUserById(professorId);
+        if (!slot) {
+            throw new NotFoundError('Slot not found');
+        }
 
-    if (!user || user.role !== 'professor') {
-        throw new NotFoundError('Invalid Professor Id');
+        if (slot.professor.toString() !== userId) {
+            throw new ForbiddenError('Not Authorized to delete this slot');
+        }
+
+        await this.slotRepository.deleteSlot(slotId);
+
+        return true;
     }
 
-    // TODO check if professor has slots , if not return empty array
-    const slots = await slotRepository.getAvailableSlots(professorId);
+    async updateSlot(slotId: string, updateData: UpdateSlotDto): Promise<SlotResponseDto> {
+        const slot = await this.slotRepository.findSlotById(slotId);
 
-    if (!slots.length) {
-        return [];
+        if (!slot) {
+            throw new NotFoundError('Slot not found');
+        }
+
+        const updatedSlot = await this.slotRepository.updateSlot(slotId, {
+            ...updateData,
+        });
+
+        if (!updatedSlot) {
+            throw new NotFoundError("Slot can't be updated");
+        }
+
+        return {
+            id: updatedSlot._id.toString(),
+            professor: updatedSlot.professor.toString(),
+            startTime: updatedSlot.startTime,
+            endTime: updatedSlot.endTime,
+            isBooked: updatedSlot.isBooked,
+            createdAt: updatedSlot.createdAt,
+            updatedAt: updatedSlot.updatedAt,
+        };
     }
-
-    return slots;
-};
-
-const deleteSlot = async (slotId: number, professorId: number) => {
-    const slot = await slotRepository.getSlotDetailsById(slotId);
-
-    if (!slot) {
-        throw new NotFoundError('Slot not found');
-    }
-
-    if (slot.professorId !== professorId) {
-        throw new UnauthorizedError('Not authorized to delete this slot');
-    }
-
-    await slotRepository.deleteSlot(slotId);
-
-    return logger.info(`Slot deleted successfully with id: ${slotId}`);
-};
-
-// TODO : Update Slot
-
-export const slotService = { createSlot, getAvailableSlots, getSlotsByProfessor, deleteSlot };
+}
 
 // TODO disalocate slot after time is passed (cron job)

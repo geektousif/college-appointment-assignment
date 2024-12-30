@@ -1,44 +1,67 @@
-import { slotService } from '../services/slot.service';
-import { ApiResponse } from '../utils/ApiResponse';
-
+import { inject, injectable } from 'tsyringe';
+import { checkSlotAvailabilityDto } from '../dto/slot.dto';
+import { SlotService } from '../services/slot.service';
+import { SuccessResponse } from '../utils/ApiResponse';
 import asyncHandler from '../utils/asyncHandler';
+import { DI_TOKEN_NAMES } from '../constants/container';
 
-const createSlot = asyncHandler(async (req, res) => {
-    const { startTime, endTime } = req.body;
+// TODO add error handling for response
 
-    const professorId = Number(req.user?.id);
+@injectable()
+export class SlotController {
+    constructor(@inject(DI_TOKEN_NAMES.SLOT_SERVICE) private slotService: SlotService) {}
 
-    const slot = await slotService.createSlot({ startTime, endTime, professorId });
+    createSlot = asyncHandler(async (req, res) => {
+        const { startTime, endTime } = req.body;
 
-    return res.status(201).json(ApiResponse(201, 'Slot created successfully', slot));
-});
+        // LATER: req.user maybe undefined
+        const professor = req.user?.id as string;
 
-// TODO Get Slots based on Date
-const getMySlots = asyncHandler(async (req, res) => {
-    const professorId = Number(req.user?.id);
+        const slot = await this.slotService.createSlot({ startTime, endTime, professor });
 
-    const slots = await slotService.getSlotsByProfessor(professorId);
+        return res.status(201).json(SuccessResponse(201, 'Slot created successfully', slot));
+    });
 
-    return res.status(200).json(ApiResponse(200, 'Slots fetched successfully', slots));
-});
+    getMySlots = asyncHandler(async (req, res) => {
+        const professorId = req.user?.id;
+        console.log(professorId);
 
-const getSlotsByProfessor = asyncHandler(async (req, res) => {
-    const professorId = Number(req.params.professorId);
+        const slots = await this.slotService.getAllSlots(professorId as string);
 
-    const slots = await slotService.getAvailableSlots(professorId);
+        return res.status(200).json(SuccessResponse(200, 'Slots fetched successfully', slots));
+    });
 
-    return res.status(200).json(ApiResponse(200, 'Slots fetched successfully', slots));
-});
+    searchSlots = asyncHandler(async (req, res) => {
+        const professorId = req.params.professorId;
+        const { startTime, endTime } = req.body;
 
-// TODO : Update Slot
+        const searchData: checkSlotAvailabilityDto = {
+            professor: professorId,
+            startTime,
+            endTime,
+        };
 
-const deleteSlot = asyncHandler(async (req, res) => {
-    const professorId = Number(req.user?.id);
-    const slotId = Number(req.params.slotId);
+        // TODO Add to validation
+        // if (!user || user.role !== 'professor') {
+        //     throw new NotFoundError('Invalid Professor Id');
+        // }
+        const slots = await this.slotService.searchSlots(searchData);
 
-    await slotService.deleteSlot(slotId, professorId);
+        if (!slots.length) {
+            return res.status(200).json(SuccessResponse(200, 'No slots found', slots));
+        }
 
-    return res.status(200).json(ApiResponse(200, 'Slot deleted successfully', null));
-});
+        return res.status(200).json(SuccessResponse(200, 'Slots fetched successfully', slots));
+    });
 
-export const slotController = { createSlot, getMySlots, getSlotsByProfessor, deleteSlot };
+    // TODO : Update Slot
+
+    deleteSlot = asyncHandler(async (req, res) => {
+        const professorId = req.user?.id as string;
+        const slotId = req.params.slotId;
+
+        await this.slotService.deleteSlot(slotId, professorId);
+
+        return res.status(204).json(SuccessResponse(204, 'Slot deleted successfully'));
+    });
+}

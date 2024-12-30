@@ -1,36 +1,49 @@
-import { appointmentService } from '../services/appointment.service';
-import { ApiResponse } from '../utils/ApiResponse';
+import { inject, injectable } from 'tsyringe';
+import { CreateAppointmentDto } from '../dto/appointment.dto';
+import { AppointmentService } from '../services/appointment.service';
+import { SuccessResponse } from '../utils/ApiResponse';
 import asyncHandler from '../utils/asyncHandler';
+import { DI_TOKEN_NAMES } from '../constants/container';
+import { BadRequestError } from '../utils/AppError';
 
-const createAppointment = asyncHandler(async (req, res) => {
-    const { slotId } = req.body;
+@injectable()
+export class AppointmentController {
+    constructor(@inject(DI_TOKEN_NAMES.APPOINTMENT_SERVICE) private appointmentService: AppointmentService) {}
+    createAppointment = asyncHandler(async (req, res) => {
+        const { slotId } = req.body;
 
-    const studentId = Number(req.user?.id);
+        if (!slotId) {
+            throw new BadRequestError('Slot ID is required');
+        }
 
-    const appointment = await appointmentService.createAppointment(studentId, slotId);
+        const appointmentData: CreateAppointmentDto = {
+            slot: slotId,
+            student: req.user?.id as string,
+        };
 
-    return res.status(201).json(ApiResponse(201, 'Appointment created successfully', appointment));
-});
+        console.log(appointmentData);
+        const appointment = await this.appointmentService.createAppointment(appointmentData);
 
-const cancelAppointment = asyncHandler(async (req, res) => {
-    const appointmentId = Number(req.params.appointmentId);
-    const userId = Number(req.user?.id);
+        return res.status(201).json(SuccessResponse(201, 'Appointment created successfully', appointment));
+    });
 
-    await appointmentService.cancelAppointment(appointmentId, userId);
+    cancelAppointment = asyncHandler(async (req, res) => {
+        const appointmentId = req.params.appointmentId as string;
+        const userId = req.user?.id as string;
 
-    return res.status(200).json(ApiResponse(200, 'Appointment cancelled successfully', null));
-});
+        await this.appointmentService.cancelAppointment(appointmentId, userId);
 
-const getMyAppointments = asyncHandler(async (req, res) => {
-    const userId = Number(req.user?.id);
+        return res.status(200).json(SuccessResponse(200, 'Appointment cancelled successfully', null));
+    });
 
-    const appointments = await appointmentService.getMyAppointments(userId);
+    getMyAppointments = asyncHandler(async (req, res) => {
+        const userId = req.user?.id as string;
 
-    return res.status(200).json(ApiResponse(200, 'Your Appointments fetched successfully', appointments));
-});
+        const appointments = await this.appointmentService.getMyAppointments(userId);
 
-export const appointmentController = {
-    createAppointment,
-    cancelAppointment,
-    getMyAppointments,
-};
+        if (!appointments.length) {
+            return res.status(200).json(SuccessResponse(200, 'No Appointments found', []));
+        }
+        return res.status(200).json(SuccessResponse(200, 'Your Appointments fetched successfully', appointments));
+    });
+}

@@ -1,23 +1,40 @@
-import { createSelectSchema, createInsertSchema } from 'drizzle-zod';
-import { user } from '../db/schemas/user.schema';
-import { z } from 'zod';
-import { USER_ROLE } from '../constants/enums';
+// import { IUser } from '../types/interfaces/IUser';
 
-export const selectUserSchema = createSelectSchema(user).omit({
-    password: true,
-});
+import { CreateUserSchema, UpdateUserSchema } from '../validators/user.validator';
 
-export const createUserSchema = createInsertSchema(user, {
-    name: (schema) => schema.min(1),
-    email: (schema) => schema.email().min(1),
-    password: (schema) => schema.min(3),
-    role: z.enum([USER_ROLE.STUDENT, USER_ROLE.PROFESSOR]).default(USER_ROLE.STUDENT),
-});
+// export interface CreateUserDto extends IUser {
+//     password: string;
+// }
 
-export const loginUserSchema = z.object({
-    email: z.string().email().min(1),
-    password: z.string().min(3),
-});
+// export interface LoginUserDto {
+//     email: string;
+//     password: string;
+// }
 
-export type CreateUserSchema = z.infer<typeof createUserSchema>;
-export type SelectUserSchema = z.infer<typeof selectUserSchema>;
+// export interface UserResponseDto extends Omit<IUser, 'password'> {}
+
+// export interface TokenResponseDto {
+//     accessToken?: string;
+//     refreshToken?: string;
+// }
+
+// export interface UpdateUserDto extends Partial<IUser> {}
+
+export interface CreateUserDto extends CreateUserSchema {}
+
+export interface LoginUserDto extends Pick<CreateUserSchema, 'email' | 'password'> {}
+
+export interface UpdateUserDto extends UpdateUserSchema {
+    refreshToken?: string;
+}
+
+export interface CheckUserDto extends UpdateUserDto {}
+
+export interface UserResponseDto {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    createdAt: Date;
+    updatedAt: Date;
+}

@@ -1,9 +1,29 @@
-import { z } from 'zod';
+import { CreateAppointmentSchema, UpdateAppointmentSchema } from '../validators/appointment.validator';
+import { SlotResponseDto } from './slot.dto';
+import { UserResponseDto } from './user.dto';
 
-const createAppointmentSchema = z.object({
-    slotId: z.number(),
-});
+export interface CreateAppointmentDto extends CreateAppointmentSchema {
+    professor?: string;
+    student: string;
+}
 
-export { createAppointmentSchema };
+export interface UpdateAppointmentDto extends UpdateAppointmentSchema {
+    slot: string;
+    student: string;
+    professor: string;
+}
 
-export type CreateAppointmentSchema = z.infer<typeof createAppointmentSchema>;
+export interface CancelAppointmentDto {
+    appointmentId: string;
+    userId: string;
+}
+
+export interface AppointmentResponseDto {
+    id: string;
+    professor: UserResponseDto;
+    student: UserResponseDto;
+    slot: SlotResponseDto;
+    status: string;
+    createdAt: Date;
+    updatedAt: Date;
+}

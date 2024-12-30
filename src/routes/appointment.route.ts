@@ -1,25 +1,21 @@
 import { Router } from 'express';
-import { appointmentController } from '../controllers/appointment.controller';
+import { AppointmentController } from '../controllers/appointment.controller';
 import authMiddleware from '../middlewares/auth.middleware';
-import roleMiddleware from '../middlewares/role.middleware';
 import { USER_ROLE } from '../constants/enums';
-import { UserRole } from '../types';
+import { container } from 'tsyringe';
+import { DI_TOKEN_NAMES } from '../constants/container';
 
-const router = Router();
+export const createAppointmentRouter = () => {
+    const router = Router();
 
-router.use(authMiddleware);
+    const controller = container.resolve<AppointmentController>(DI_TOKEN_NAMES.APPOINTMENT_CONTROLLER);
 
-router.post('/', roleMiddleware([USER_ROLE.STUDENT] as UserRole[]), appointmentController.createAppointment);
-router.delete(
-    '/:appointmentId',
-    roleMiddleware([USER_ROLE.STUDENT, USER_ROLE.PROFESSOR] as UserRole[]),
-    appointmentController.cancelAppointment,
-);
+    const { createAppointment, cancelAppointment, getMyAppointments } = controller;
+    const { STUDENT, PROFESSOR } = USER_ROLE;
 
-router.get(
-    '/',
-    roleMiddleware([USER_ROLE.STUDENT, USER_ROLE.PROFESSOR] as UserRole[]),
-    appointmentController.getMyAppointments,
-);
+    router.delete('/:appointmentId', authMiddleware([STUDENT, PROFESSOR]), cancelAppointment);
+    router.post('/', authMiddleware([STUDENT]), createAppointment);
+    router.get('/', authMiddleware([STUDENT, PROFESSOR]), getMyAppointments);
 
-export default router;
+    return router;
+};

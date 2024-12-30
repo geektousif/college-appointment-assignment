@@ -1,35 +1,34 @@
 import { NextFunction, Request, Response } from 'express';
+import { ZodError } from 'zod';
+
 import AppError from '../utils/AppError';
 import logger from '../config/logger.config';
-import { ZodError } from 'zod';
 import env from '../config';
-import { ApiResponse } from '../utils/ApiResponse';
+import { ErrorResponse } from '../utils/ApiResponse';
 
-function errorHandler(err: any, req: Request, res: Response, _next: NextFunction) {
-    logger.error('Error Middleware:', {
-        message: err.message,
-        stack: err.stack,
-        errors: err.errors,
-        path: req.path,
-        method: req.method,
-    });
+// @ts-ignore
+function errorHandler(err: any, req: Request, res: Response, next: NextFunction) {
+    logger.error('Error: ', err); // TODO logger not perfect
+    console.log(err);
 
     const isDev = env.NODE_ENV === 'development';
+    const errStack = isDev ? err.errors : undefined;
 
     if (err instanceof AppError) {
-        res.status(err.statusCode).json(ApiResponse(err.statusCode, err.message, isDev ? err.errors : null));
+        res.status(err.statusCode).json(ErrorResponse(err.statusCode, err.message, errStack));
     }
 
     if (err instanceof ZodError) {
         const errorMessages = err.errors.map((issue: any) => `${issue.path.join('.')} is ${issue.message}`);
-        res.status(400).json(ApiResponse(400, 'Validation error', errorMessages));
+
+        res.status(400).json(ErrorResponse(400, 'Bad Request', errorMessages));
     }
 
-    res.status(500).json(ApiResponse(500, 'Something went wrong', isDev ? err.stack : null));
+    res.status(500).json(ErrorResponse(500, 'Internal Server Error', errStack));
 
     return;
 }
 
-// BUG Fix: Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client
+// BUG Maybe a bug from here: Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client
 
 export default errorHandler;

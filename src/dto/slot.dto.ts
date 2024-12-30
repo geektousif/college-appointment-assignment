@@ -1,24 +1,22 @@
-import { createInsertSchema, createSelectSchema, createUpdateSchema } from 'drizzle-zod';
-import { slot } from '../db/schemas/slot.schema';
-import { z } from 'zod';
+import { CheckSlotAvailabilitySchema, CreateSlotSchema, UpdateSlotSchema } from '../validators/slot.validator';
+import { UserResponseDto } from './user.dto';
 
-// TODO Separate Validation Schemas and DTOs
-// TODO Fix mess with professorId
+export interface CreateSlotDto extends CreateSlotSchema {
+    professor: string;
+}
 
-export const createSlotSchema = createInsertSchema(slot, {
-    professorId: z.number().positive().optional(),
-    startTime: z.coerce
-        .date()
-        .refine((value) => new Date(value) > new Date(), { message: "Start time can't be in the past" }),
-    endTime: z.coerce
-        .date()
-        .refine((value) => new Date(value) > new Date(), { message: "End time can't be in the past" }),
-}).refine((data) => data.startTime < data.endTime, { message: 'End time should be greater than start time' });
+export interface UpdateSlotDto extends UpdateSlotSchema {}
 
-export const selectSlotSchema = createSelectSchema(slot);
+export interface checkSlotAvailabilityDto extends CheckSlotAvailabilitySchema {
+    professor: string;
+}
 
-export const updateSlotSchema = createUpdateSchema(slot).pick({ startTime: true, endTime: true, isBooked: true });
-
-export type CreateSlotSchema = z.infer<typeof createSlotSchema>;
-export type SelectSlotSchema = z.infer<typeof selectSlotSchema>;
-export type UpdateSlotSchema = z.infer<typeof updateSlotSchema>;
+export interface SlotResponseDto {
+    id: string;
+    professor: Pick<UserResponseDto, 'id' | 'name' | 'email'> | string;
+    startTime: Date;
+    endTime: Date;
+    isBooked: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}

@@ -1,55 +1,95 @@
-import { slotRepository } from '../db/repositories/slot.repository';
+import mongoose from 'mongoose';
+
+import { AppointmentRepository } from '../repositories/appointment.repository';
+import { SlotRepository } from '../repositories/slot.repository';
+import { CreateAppointmentDto } from '../dto/appointment.dto';
 import { BadRequestError, NotFoundError, UnauthorizedError } from '../utils/AppError';
-import { appointmentRepository } from '../db/repositories/appointment.repository';
 import logger from '../config/logger.config';
+import { inject, injectable } from 'tsyringe';
+import { DI_TOKEN_NAMES } from '../constants/container';
 
-const createAppointment = async (studentId: number, slotId: number) => {
-    const slot = await slotRepository.getSlotDetailsById(slotId);
-
-    if (!slot) {
-        throw new NotFoundError('Slot not found');
+@injectable()
+export class AppointmentService {
+    private connection: mongoose.Connection;
+    constructor(
+        @inject(DI_TOKEN_NAMES.APPOINTMENT_REPOSITORY) private appointmentRepository: AppointmentRepository,
+        @inject(DI_TOKEN_NAMES.SLOT_REPOSITORY) private slotRepository: SlotRepository,
+    ) {
+        this.connection = mongoose.connection;
     }
 
-    if (slot.isBooked) {
-        throw new BadRequestError('Slot already booked');
+    async createAppointment(createData: CreateAppointmentDto) {
+        const { slot: slotId, student: studentId } = createData;
+
+        const slot = await this.slotRepository.findSlotById(slotId);
+
+        if (!slot) {
+            throw new BadRequestError('Slot not found');
+        }
+
+        if (slot.isBooked) {
+            throw new BadRequestError('Slot is already booked');
+        }
+
+        const session = await this.connection.startSession();
+
+        session.startTransaction();
+        try {
+            const appointment = await this.appointmentRepository.createAppointment(
+                {
+                    slot: slotId,
+                    student: studentId,
+                    professor: slot.professor.toString(),
+                },
+                session,
+            );
+
+            await this.slotRepository.updateSlot(slotId, { isBooked: true }, session);
+            await session.commitTransaction();
+
+            // LATER concurrency control
+            // logger.info(`Appointment with id ${appointment.} created successfully`);
+            return appointment; // TODO return AppointmentResponseDto
+        } catch (error) {
+            logger.error('Error creating appointment, rolling back: ', error);
+            await session.abortTransaction();
+            throw error;
+        } finally {
+            await session.endSession();
+        }
     }
 
-    const appointment = await appointmentRepository.createAppointment(studentId, slotId);
+    async cancelAppointment(appointmentId: string, userId: string) {
+        const appointment = await this.appointmentRepository.findAppointmentById(appointmentId);
 
-    logger.info(`Appointment created for studentId: ${studentId} and slotId: ${slotId}`);
-    return appointment;
-};
+        if (!appointment) {
+            throw new NotFoundError('Appointment not found');
+        }
 
-const cancelAppointment = async (appointmentId: number, userId: number) => {
-    const appointment = await appointmentRepository.getAppointmentById(appointmentId);
+        if (appointment.student.toString() !== userId && appointment.professor.toString() !== userId) {
+            throw new UnauthorizedError('Not Authorized to cancel this appointment');
+        }
 
-    if (!appointment) {
-        throw new NotFoundError('Appointment not found');
+        const session = await this.connection.startSession();
+        session.startTransaction();
+
+        try {
+            await this.slotRepository.updateSlot(appointment.slot.toString(), { isBooked: false }, session);
+            await this.appointmentRepository.cancelAppointment({ appointmentId, userId }, session);
+            await session.commitTransaction();
+
+            logger.info(`Appointment with id ${appointmentId} cancelled successfully by user with id ${userId}`);
+            return true;
+        } catch (error) {
+            logger.error('Error cancelling appointment', error);
+            await session.abortTransaction();
+            throw error;
+        } finally {
+            await session.endSession();
+        }
     }
 
-    if (appointment.studentId !== userId && appointment.professorId !== userId) {
-        throw new UnauthorizedError('Not Authorized to cancel this appointment');
-    }
-
-    await appointmentRepository.deleteAppointment(appointmentId);
-
-    return logger.info(`Appointment cancelled for appointmentId: ${appointmentId}`);
-};
-
-const getMyAppointments = async (userId: number) => {
-    return await appointmentRepository.getMyAppointments(userId);
-};
-
-// const getStudentAppointments = async (studentId: number) => {
-//     return await appointmentRepository.getStudentAppointments(studentId);
-// };
-
-// const getProfessorAppointments = async (professorId: number) => {
-//     return await appointmentRepository.getProfessorAppointments(professorId);
-// };
-
-export const appointmentService = {
-    createAppointment,
-    cancelAppointment,
-    getMyAppointments,
-};
+    async getMyAppointments(userId: string) {
+        return await this.appointmentRepository.findAppointmentsByUserId(userId);
+    } // TODO return AppointmentResponseDto
+}

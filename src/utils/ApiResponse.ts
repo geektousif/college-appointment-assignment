@@ -1,11 +1,17 @@
-export const ApiResponse = (statusCode: number, message: string, data: any[] | object | null) => {
-    const success = statusCode < 400;
-
+export const SuccessResponse = (statusCode: number, message: string, data?: any) => {
     return {
-        success,
+        success: true,
         statusCode,
         message,
-        data: success ? data : null,
-        errors: success ? null : data,
+        data,
+    };
+};
+
+export const ErrorResponse = (statusCode: number, message: string, errors?: any[]) => {
+    return {
+        success: false,
+        statusCode,
+        message,
+        errors,
     };
 };

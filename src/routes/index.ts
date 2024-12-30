@@ -1,12 +1,14 @@
 import express from 'express';
-import authRouter from './auth.route';
-import slotRouter from './slot.route';
-import appointmentRouter from './appointment.route';
+import { createUserRouter } from './user.route';
+import { createSlotRouter } from './slot.route';
+import { createAppointmentRouter } from './appointment.route';
 
-const router = express.Router();
+export const setupRoutes = () => {
+    const router = express.Router();
 
-router.use('/auth', authRouter);
-router.use('/slots', slotRouter);
-router.use('/appointments', appointmentRouter);
+    router.use('/user', createUserRouter());
+    router.use('/slots', createSlotRouter());
+    router.use('/appointments', createAppointmentRouter());
 
-export default router;
+    return router;
+};

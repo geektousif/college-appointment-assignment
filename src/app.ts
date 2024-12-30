@@ -1,29 +1,36 @@
 import express from 'express';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import cors from 'cors';
 
-import route from './routes/index';
+import { setupRoutes } from './routes';
 import errorHandler from './middlewares/error.middleware';
+import { container } from 'tsyringe';
+import { DI_TOKEN_NAMES } from './constants/container';
 
-const app = express();
+export const startApp = () => {
+    const app = express();
 
-app.use(morgan('dev'));
+    app.use(morgan('dev'));
 
-// BUG Fix: Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client
+    // TODO: configure cors according to requirements
 
-// TODO: Add CORS & helmet
-// app.use(
-//     cors({
-//         origin: env.FRONTEND_URL,
-//     }),
-// );
+    app.use(helmet());
+    app.use(cors());
+    app.use(cookieParser());
 
-app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+    app.use((_req, _res, next) => {
+        console.log('Registered tokens:', container.resolveAll(DI_TOKEN_NAMES.USER_CONTROLLER));
+        next();
+    });
 
-app.use('/api/v1', route);
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: false }));
 
-app.use(errorHandler);
+    app.use('/api/v1', setupRoutes());
 
-export default app;
+    app.use(errorHandler);
+
+    return app;
+};

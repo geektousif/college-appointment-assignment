@@ -1,26 +1,25 @@
 import { Router } from 'express';
-import { slotController } from '../controllers/slot.controller';
+import { SlotController } from '../controllers/slot.controller';
 import authMiddleware from '../middlewares/auth.middleware';
-import roleMiddleware from '../middlewares/role.middleware';
-import { UserRole } from '../types';
 import { USER_ROLE } from '../constants/enums';
 import validate from '../middlewares/validateSchema.middleware';
-import { createSlotSchema } from '../dto/slot.dto';
+import { container } from 'tsyringe';
+import { createSlotSchema } from '../validators/slot.validator';
+import { DI_TOKEN_NAMES } from '../constants/container';
 
-const router = Router();
+export const createSlotRouter = () => {
+    const router = Router();
 
-router.use(authMiddleware);
+    const controller = container.resolve<SlotController>(DI_TOKEN_NAMES.SLOT_CONTROLLER);
 
-router.get('/my', roleMiddleware([USER_ROLE.PROFESSOR] as UserRole[]), slotController.getMySlots);
-router.get('/professor/:professorId', slotController.getSlotsByProfessor);
+    const { PROFESSOR, STUDENT } = USER_ROLE;
+    const { createSlot, getMySlots, searchSlots, deleteSlot } = controller;
 
-router.post(
-    '/',
-    roleMiddleware([USER_ROLE.PROFESSOR] as UserRole[]),
-    validate(createSlotSchema),
-    slotController.createSlot,
-);
+    router.post('/', authMiddleware([PROFESSOR]), validate(createSlotSchema), createSlot);
+    router.get('/:professorId', authMiddleware([STUDENT, PROFESSOR]), searchSlots);
+    router.get('/', authMiddleware([PROFESSOR]), getMySlots);
 
-router.delete('/:slotId', roleMiddleware([USER_ROLE.PROFESSOR] as UserRole[]), slotController.deleteSlot);
+    router.delete('/:slotId', authMiddleware([PROFESSOR]), deleteSlot);
 
-export default router;
+    return router;
+};

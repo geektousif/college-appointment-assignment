@@ -1,14 +1,25 @@
-// import { seed } from 'drizzle-seed';
-import app from './app';
-
+import 'reflect-metadata';
+// import { container } from 'tsyringe';
+import { startApp } from './app';
 import env from './config';
-// import db from './db';
-// import { user } from './db/schema/user.schema';
+import connectDB from './config/db.config';
+import { registerDependencies } from './container';
 
-// seed(db, { user }).then(() => {
-//     console.log('Database seeded');
-// });
+(async () => {
+    const conn = await connectDB();
 
-app.listen(env.PORT, () => {
-    console.log(`Server running on port ${env.PORT}`);
-});
+    registerDependencies();
+
+    const app = startApp();
+    const server = app.listen(env.PORT, () => {
+        console.log(`Server running on port ${env.PORT}`);
+    });
+
+    process.on('SIGTERM', async () => {
+        server.close(async () => {
+            await conn.connection.close();
+            console.log('Process terminated');
+            process.exit(0);
+        });
+    });
+})();
