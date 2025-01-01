@@ -8,6 +8,7 @@ const envSchema = z.object({
     PORT: z.coerce.number().default(3000),
 
     DB_URL: z.string(),
+    DB_CERT_PATH: z.string(),
 
     JWT_ACCESS_SECRET: z.string(),
     JWT_REFRESH_SECRET: z.string(),

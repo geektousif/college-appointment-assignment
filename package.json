@@ -1,34 +1,29 @@
 {
     "name": "backend",
     "version": "1.0.0",
-    "main": "index.js",
+    "main": "dist/index.js",
     "scripts": {
         "build": "tsc",
         "watch": "tsc -w",
         "devrun": "nodemon dist/index.js",
         "dev": "concurrently \"npm run watch\" \"npm run devrun\"",
+        "clean": "rimraf dist",
+        "prebuild": "npm run clean",
         "start": "node dist/index.js",
         "lint": "eslint src/**/*.ts",
         "lint:fix": "eslint src/**/*.ts --fix .",
-        "prettier": "prettier --check **/*.ts",
-        "prettier:fix": "prettier --write **/*.ts",
-        "db:generate": "drizzle-kit generate --config=src/config/drizzle.config.ts",
-        "db:migrate": "drizzle-kit migrate --config=src/config/drizzle.config.ts",
-        "test": "jest",
-        "test:e2e": "docker-compose -f docker-compose.test.yml up --force-recreate --build -d && jest -- --config=jest.config.ts ./tests/e2e && docker-compose -f docker-compose.test.yml down -v"
+        "format": "prettier --write **/*.ts",
+        "prepare": "husky install"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
-    "description": "",
+    "description": "college appointment system for students and professors",
     "dependencies": {
         "bcrypt": "^5.1.1",
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
         "dotenv": "^16.4.7",
-        "drizzle-orm": "^0.38.2",
-        "drizzle-seed": "^0.1.3",
-        "drizzle-zod": "^0.6.0",
         "express": "^4.21.2",
         "helmet": "^8.0.0",
         "http-status-codes": "^2.3.0",
@@ -36,7 +31,6 @@
         "mongoose": "^8.9.2",
         "morgan": "^1.10.0",
         "ms": "^2.1.3",
-        "pg": "^8.13.1",
         "reflect-metadata": "^0.2.2",
         "tsyringe": "^4.8.0",
         "winston": "^3.17.0",
@@ -48,31 +42,35 @@
         "@types/cookie-parser": "^1.4.8",
         "@types/cors": "^2.8.17",
         "@types/express": "^5.0.0",
-        "@types/jest": "^29.5.14",
         "@types/jsonwebtoken": "^9.0.7",
         "@types/morgan": "^1.9.9",
         "@types/ms": "^0.7.34",
-        "@types/pg": "^8.11.10",
-        "@types/supertest": "^6.0.2",
         "@typescript-eslint/eslint-plugin": "^8.18.0",
         "@typescript-eslint/parser": "^8.18.0",
         "concurrently": "^9.1.0",
-        "drizzle-kit": "^0.30.1",
         "eslint": "^9.17.0",
         "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-import": "^2.31.0",
         "eslint-plugin-prettier": "^5.2.1",
         "globals": "^15.14.0",
         "husky": "^9.1.7",
-        "jest": "^29.7.0",
-        "lint-staged": "^15.2.11",
+        "lint-staged": "^15.3.0",
         "nodemon": "^3.1.7",
         "prettier": "^3.4.2",
-        "supertest": "^7.0.0",
-        "ts-jest": "^29.2.5",
+        "rimraf": "^6.0.1",
         "tsx": "^4.19.2",
         "typescript": "^5.7.2",
-        "typescript-eslint": "^8.18.1",
-        "wait-on": "^8.0.1"
+        "typescript-eslint": "^8.18.1"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "lint-staged"
+        }
+    },
+    "lint-staged": {
+        "*.ts": [
+            "eslint --fix",
+            "prettier --write"
+        ]
     }
 }

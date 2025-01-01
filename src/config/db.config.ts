@@ -1,10 +1,14 @@
-import mongoose from 'mongoose';
+import mongoose, { MongooseError } from 'mongoose';
 import envConfig from '.';
 import logger from './logger.config';
 
 const connectDB = async () => {
     try {
-        const connection = await mongoose.connect(envConfig.DB_URL);
+        const connection = await mongoose.connect(envConfig.DB_URL, {
+            tls: true,
+            tlsCAFile: './global-bundle.pem',
+            tlsAllowInvalidCertificates: true,
+        });
         logger.info(`Database connected with ${connection.connection.host}`);
 
         connection.connection.on('disconnected', () => {
@@ -17,7 +21,7 @@ const connectDB = async () => {
         });
 
         return connection;
-    } catch (error) {
+    } catch (error: MongooseError | any) {
         logger.error('Error connecting to database', error);
         process.exit(1);
     }
