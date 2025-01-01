@@ -7,6 +7,7 @@ export const SuccessResponse = (statusCode: number, message: string, data?: any)
     };
 };
 
+//
 export const ErrorResponse = (statusCode: number, message: string, errors?: any[]) => {
     return {
         success: false,
