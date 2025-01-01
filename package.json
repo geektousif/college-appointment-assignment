@@ -13,7 +13,7 @@
         "lint": "eslint src/**/*.ts",
         "lint:fix": "eslint src/**/*.ts --fix .",
         "format": "prettier --write **/*.ts",
-        "prepare": "husky install"
+        "prepare": "husky"
     },
     "keywords": [],
     "author": "",
@@ -62,15 +62,10 @@
         "typescript": "^5.7.2",
         "typescript-eslint": "^8.18.1"
     },
-    "husky": {
-        "hooks": {
-            "pre-commit": "lint-staged"
-        }
-    },
     "lint-staged": {
         "*.ts": [
-            "eslint --fix",
-            "prettier --write"
+            "npm run lint:fix",
+            "npm run format"
         ]
     }
 }
