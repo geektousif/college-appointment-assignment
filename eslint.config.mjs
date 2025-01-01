@@ -28,6 +28,6 @@ export default [
     eslintPluginPrettier,
 
     {
-        ignores: ['node_modules', 'dist'],
+        ignores: ['node_modules', 'dist', '.github'],
     },
 ];
