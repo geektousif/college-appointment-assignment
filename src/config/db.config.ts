@@ -6,7 +6,7 @@ const connectDB = async () => {
     try {
         const connection = await mongoose.connect(envConfig.DB_URL, {
             tls: true,
-            tlsCAFile: './global-bundle.pem',
+            tlsCAFile: envConfig.DB_CERT_PATH,
             tlsAllowInvalidCertificates: true,
         });
         logger.info(`Database connected with ${connection.connection.host}`);

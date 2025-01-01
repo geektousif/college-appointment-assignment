@@ -2,8 +2,5 @@
 node_modules
 dist
 logs
+bal/
 global-bundle.pem
-
-my_stuff
-
-

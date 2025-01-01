@@ -1,5 +1,0 @@
-In Readme::
-- .env.example
-- steps to run -- migration first
-
-- implement husky
