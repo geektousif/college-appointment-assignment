@@ -22,6 +22,6 @@ jobs:
       run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
       
     - name: Build docker image
-      run: docker build -t assignment-unque-college-appointment .
+      run: docker build -t college-appointment-assignment .
     - name: Push to Dockerhub
       run: docker push geektousif/college-appointment-assignment:latest
