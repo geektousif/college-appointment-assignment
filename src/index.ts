@@ -1,5 +1,4 @@
 import 'reflect-metadata';
-// import { container } from 'tsyringe';
 import { startApp } from './app';
 import env from './config';
 import connectDB from './config/db.config';

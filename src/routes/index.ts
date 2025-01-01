@@ -6,7 +6,7 @@ import { createAppointmentRouter } from './appointment.route';
 export const setupRoutes = () => {
     const router = express.Router();
 
-    router.use('/user', createUserRouter());
+    router.use('/users', createUserRouter());
     router.use('/slots', createSlotRouter());
     router.use('/appointments', createAppointmentRouter());
 

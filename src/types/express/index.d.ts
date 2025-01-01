@@ -1,4 +1,4 @@
-import { AuthUser } from '../../interfaces/auth.user.interface';
+import { AuthUser } from '../../interfaces/utils/auth.user.interface';
 
 declare global {
     namespace Express {

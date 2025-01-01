@@ -32,9 +32,8 @@ export class AppointmentService {
         }
 
         const session = await this.connection.startSession();
-
-        session.startTransaction();
         try {
+            session.startTransaction();
             const appointment = await this.appointmentRepository.createAppointment(
                 {
                     slot: slotId,
@@ -71,9 +70,9 @@ export class AppointmentService {
         }
 
         const session = await this.connection.startSession();
-        session.startTransaction();
 
         try {
+            session.startTransaction();
             await this.slotRepository.updateSlot(appointment.slot.toString(), { isBooked: false }, session);
             await this.appointmentRepository.cancelAppointment({ appointmentId, userId }, session);
             await session.commitTransaction();

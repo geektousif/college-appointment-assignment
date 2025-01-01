@@ -1,6 +1,6 @@
 import { Model, Schema } from 'mongoose';
 import { APPOINTMENT_STATUS } from '../../constants/enums';
-import { DocumentWithIdTimestamps } from '.';
+import { DocumentWithIdTimestamps } from '../utils/modelHelper';
 
 export interface IAppointmentDocument extends DocumentWithIdTimestamps {
     professor: Schema.Types.ObjectId;

@@ -1,6 +1,6 @@
 import { Model } from 'mongoose';
 import { USER_ROLE } from '../../constants/enums';
-import { DocumentWithIdTimestamps } from '.';
+import { DocumentWithIdTimestamps } from '../utils/modelHelper';
 
 export interface IUserDocument extends DocumentWithIdTimestamps {
     name: string;

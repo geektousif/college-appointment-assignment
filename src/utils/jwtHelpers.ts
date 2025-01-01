@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import envConfig from '../config';
-import { AuthUser } from '../interfaces/auth.user.interface';
+import { AuthUser } from '../interfaces/utils/auth.user.interface';
 import { JWT_EXPIRATION } from '../constants';
 
 export const generateAccessToken = (payload: AuthUser) => {

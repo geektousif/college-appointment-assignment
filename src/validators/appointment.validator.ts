@@ -5,9 +5,9 @@ export const createAppointmentSchema = z.object({
     slot: z.string().min(1, 'Please select a slot'),
 });
 
-export const updateAppointmentSchema = z.object({
+export const cancelAppointmentSchema = z.object({
     status: z.nativeEnum(APPOINTMENT_STATUS),
 });
 
 export type CreateAppointmentSchema = z.infer<typeof createAppointmentSchema>;
-export type UpdateAppointmentSchema = z.infer<typeof updateAppointmentSchema>;
+export type CancelAppointmentSchema = z.infer<typeof cancelAppointmentSchema>;

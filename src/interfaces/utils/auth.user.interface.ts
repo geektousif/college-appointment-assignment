@@ -1,4 +1,4 @@
-import { USER_ROLE } from '../constants/enums';
+import { USER_ROLE } from '../../constants/enums';
 
 export interface AuthUser {
     id: string;

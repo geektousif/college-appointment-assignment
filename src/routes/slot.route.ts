@@ -15,10 +15,10 @@ export const createSlotRouter = () => {
     const { PROFESSOR, STUDENT } = USER_ROLE;
     const { createSlot, getMySlots, searchSlots, deleteSlot } = controller;
 
-    router.post('/', authMiddleware([PROFESSOR]), validate(createSlotSchema), createSlot);
-    router.get('/:professorId', authMiddleware([STUDENT, PROFESSOR]), searchSlots);
-    router.get('/', authMiddleware([PROFESSOR]), getMySlots);
+    router.get('/prof/:professorId', authMiddleware([STUDENT, PROFESSOR]), searchSlots);
 
+    router.get('/', authMiddleware([PROFESSOR]), getMySlots);
+    router.post('/', authMiddleware([PROFESSOR]), validate(createSlotSchema), createSlot);
     router.delete('/:slotId', authMiddleware([PROFESSOR]), deleteSlot);
 
     return router;
