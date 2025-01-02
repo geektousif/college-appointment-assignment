@@ -3,20 +3,20 @@ name: CD Pipeline
 on:
   workflow_run: 
     workflows: ["Node.js Docker CI"]
+    branches: [ "submission" ]
     types: 
       - completed
-    branches: [ "submission" ]
 
 jobs:
   build:
     runs-on: self-hosted
 
     steps:
-      - name: Pull Docker image
-        run: sudo docker pull geektousif/college-appointment-assignment:latest
+    - name: Pull Docker image
+      run: sudo docker pull geektousif/college-appointment-assignment:latest
         
-      - name: Delete Old Container
-        run: sudo docker rm -f college-appointment-assignment || true
+    - name: Delete Old Container
+      run: sudo docker rm -f college-appointment-assignment || true
 
-      - name: Run New Container
-        run: sudo docker run -d -p 3000:3000 --name college-appointment-assignment geektousif/college-appointment-assignment:latest
+    - name: Run New Container
+      run: sudo docker run -d -p 3000:3000 --name college-appointment-assignment geektousif/college-appointment-assignment:latest
