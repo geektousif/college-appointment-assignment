@@ -17,7 +17,7 @@ import { registerDependencies } from './container';
     process.on('SIGTERM', async () => {
         server.close(async () => {
             await conn.connection.close();
-            console.log('Process terminated');
+            console.log('Process terminated!');
             process.exit(0);
         });
     });
