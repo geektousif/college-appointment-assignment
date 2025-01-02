@@ -47,7 +47,7 @@ export class AppointmentService {
             await session.commitTransaction();
 
             // LATER concurrency control
-            // logger.info(`Appointment with id ${appointment.} created successfully`);
+            // logger.info(`Appointment with id ${appointment.} created successfullyy`);
             return appointment; // TODO return AppointmentResponseDto
         } catch (error) {
             logger.error('Error creating appointment, rolling back: ', error);
