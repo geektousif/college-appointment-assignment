@@ -3,7 +3,6 @@ name: CD Pipeline
 on:
   workflow_run: 
     workflows: ["Node.js Docker CI"]
-    branches: [submission]
     types: 
       - completed
 
