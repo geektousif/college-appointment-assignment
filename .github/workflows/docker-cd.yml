@@ -5,6 +5,7 @@ on:
     workflows: ["Node.js Docker CI"]
     types: 
       - completed
+    branches: [ "submission" ]
 
 jobs:
   build:
