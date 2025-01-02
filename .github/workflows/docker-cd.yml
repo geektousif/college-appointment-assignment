@@ -2,13 +2,14 @@ name: CD Pipeline
 
 on:
   workflow_run: 
-    workflows: Node.js Docker CI
-    types: completed
-    branches: submission
+    workflows: ["Node.js Docker CI"]
+    types: 
+      - completed
+    branches: ["submission"]
 
 jobs:
   build:
-    if: ${{ github.event.workflow_run.conclusion == "success" }}
+    
     runs-on: self-hosted
 
     steps:
